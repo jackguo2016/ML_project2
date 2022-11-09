@@ -78,7 +78,7 @@ for i in range(trying_time):
     b = b - partial_b(price_train, yhat) * learning_rate
 print('L2loss=', min_loss)
 print('y = {} * x {}'.format(best_k, best_b))
-
+#hi
 
 plt.scatter(space_train, price_train, color='red')
 plt.plot(space_train, y_guess(best_k, space_train, best_b), color='blue')
