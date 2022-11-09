@@ -1,10 +1,11 @@
 from sklearn import preprocessing
+from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 import random
 import numpy as np
 import csv
 
-from sklearn.model_selection import train_test_split
+
 
 print("__________________________________________________")
 with open('kc_house_data.csv', 'r') as f:
