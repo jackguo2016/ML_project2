@@ -1,186 +1,167 @@
-from sklearn import datasets
 import numpy as np
+import pandas as pd
+import statsmodels.api as sm
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.model_selection import train_test_split as tts
+from sklearn.metrics import accuracy_score, recall_score, precision_score
+from sklearn.utils import shuffle
 
 
-class SVM:
-    def __init__(self, max_iter=100, kernel='linear'):
-        self.max_iter = max_iter
-        self._kernel = kernel
+# >> FEATURE SELECTION << #
+def remove_correlated_features(X):
+    corr_threshold = 0.9
+    corr = X.corr()
+    drop_columns = np.full(corr.shape[0], False, dtype=bool)
+    for i in range(corr.shape[0]):
+        for j in range(i + 1, corr.shape[0]):
+            if corr.iloc[i, j] >= corr_threshold:
+                drop_columns[j] = True
+    columns_dropped = X.columns[drop_columns]
+    X.drop(columns_dropped, axis=1, inplace=True)
+    return columns_dropped
 
-    def init_args(self, features, labels):
-        # 样本数，特征维度
-        self.m, self.n = features.shape
-        self.X = features
-        self.Y = labels
-        self.b = 0.0
 
-        # 将Ei保存在一个列表里
-        self.alpha = np.ones(self.m)
-        self.E = [self._E(i) for i in range(self.m)]
-        # 松弛变量
-        self.C = 1.0
-
-    def _KKT(self, i):
-        y_g = self._g(i) * self.Y[i]
-        if self.alpha[i] == 0:
-            return y_g >= 1
-        elif 0 < self.alpha[i] < self.C:
-            return y_g == 1
+def remove_less_significant_features(X, Y):
+    sl = 0.05
+    regression_ols = None
+    columns_dropped = np.array([])
+    for itr in range(0, len(X.columns)):
+        regression_ols = sm.OLS(Y, X).fit()
+        max_col = regression_ols.pvalues.idxmax()
+        max_val = regression_ols.pvalues.max()
+        if max_val > sl:
+            X.drop(max_col, axis='columns', inplace=True)
+            columns_dropped = np.append(columns_dropped, [max_col])
         else:
-            return y_g <= 1
+            break
+    regression_ols.summary()
+    return columns_dropped
 
-    # g(x)预测值，输入xi（X[i]）
-    # g(x) = \sum_{j=1}^N {\alpha_j*y_j*K(x_j,x)+b}
-    def _g(self, i):
-        r = self.b
-        for j in range(self.m):
-            r += self.alpha[j] * self.Y[j] * self.kernel(self.X[i], self.X[j])
-        return r
 
-    # 核函数
-    def kernel(self, x1, x2):
-        if self._kernel == 'linear':
-            return sum([x1[k] * x2[k] for k in range(self.n)])
-        elif self._kernel == 'poly':
-            return (sum([x1[k] * x2[k] for k in range(self.n)]) + 1) ** 2
+##############################
 
-        return 0
 
-    # E（x）为g(x)对输入x的预测值和y的差
-    # E_i = g(x_i) - y_i
-    def _E(self, i):
-        return self._g(i) - self.Y[i]
+# >> MODEL TRAINING << #
+def compute_cost(W, X, Y):
+    # calculate hinge loss
+    N = X.shape[0]
+    distances = 1 - Y * (np.dot(X, W))
+    distances[distances < 0] = 0  # equivalent to max(0, distance)
+    hinge_loss = regularization_strength * (np.sum(distances) / N)
 
-    def _init_alpha(self):
-        # 外层循环首先遍历所有满足0<a<C的样本点，检验是否满足KKT
-        index_list = [i for i in range(self.m) if 0 < self.alpha[i] < self.C]
-        # 否则遍历整个训练集
-        non_satisfy_list = [i for i in range(self.m) if i not in index_list]
-        index_list.extend(non_satisfy_list)
-        # 外层循环选择满足0<alpha_i<C，且不满足KKT的样本点。如果不存在遍历剩下训练集
-        for i in index_list:
-            if self._KKT(i):
-                continue
-            # 内层循环，|E1-E2|最大化
-            E1 = self.E[i]
-            # 如果E1是+，选择最小的E_i作为E2；如果E1是负的，选择最大的E_i作为E2
+    # calculate cost
+    cost = 1 / 2 * np.dot(W, W) + hinge_loss
+    return cost
 
-            if E1 >= 0:
-                j = min(range(self.m), key=lambda x: self.E[x])
-            else:
-                j = max(range(self.m), key=lambda x: self.E[x])
-            return i, j
 
-    def _compare(self, _alpha, L, H):
-        if _alpha > H:
-            return H
-        elif _alpha < L:
-            return L
+# I haven't tested it but this same function should work for
+# vanilla and mini-batch gradient descent as well
+def calculate_cost_gradient(W, X_batch, Y_batch):
+    # if only one example is passed (eg. in case of SGD)
+    if type(Y_batch) == np.float64:
+        Y_batch = np.array([Y_batch])
+        X_batch = np.array([X_batch])  # gives multidimensional array
+
+    distance = 1 - (Y_batch * np.dot(X_batch, W))
+    dw = np.zeros(len(W))
+
+    for ind, d in enumerate(distance):
+        if max(0, d) == 0:
+            di = W
         else:
-            return _alpha
+            di = W - (regularization_strength * Y_batch[ind] * X_batch[ind])
+        dw += di
 
-    def fit(self, features, labels):
-        self.init_args(features, labels)
-
-        for t in range(self.max_iter):
-            # train， 时间复杂度O(n)
-            i1, i2 = self._init_alpha()
-
-            # 边界,计算阈值b和差值E_i
-            if self.Y[i1] == self.Y[i2]:
-                # L = max(0, alpha_2 + alpha_1 -C)
-                # H = min(C, alpha_2 + alpha_1)
-                L = max(0, self.alpha[i1] + self.alpha[i2] - self.C)
-                H = min(self.C, self.alpha[i1] + self.alpha[i2])
-            else:
-                # L = max(0, alpha_2 - alpha_1)
-                # H = min(C, alpha_2 + alpha_1+C)
-                L = max(0, self.alpha[i2] - self.alpha[i1])
-                H = min(self.C, self.C + self.alpha[i2] - self.alpha[i1])
-
-            E1 = self.E[i1]
-            E2 = self.E[i2]
-            # eta=K11+K22-2K12= ||phi(x_1) - phi(x_2)||^2
-            eta = self.kernel(self.X[i1], self.X[i1]) + self.kernel(
-                self.X[i2],
-                self.X[i2]) - 2 * self.kernel(self.X[i1], self.X[i2])
-            if eta <= 0:
-                # print('eta <= 0')
-                continue
-            # 更新约束方向的解
-            alpha2_new_unc = self.alpha[i2] + self.Y[i2] * (
-                    E1 - E2) / eta  # 此处有修改，根据书上应该是E1 - E2，书上130-131页
-            alpha2_new = self._compare(alpha2_new_unc, L, H)
-
-            alpha1_new = self.alpha[i1] + self.Y[i1] * self.Y[i2] * (
-                    self.alpha[i2] - alpha2_new)
-
-            b1_new = -E1 - self.Y[i1] * self.kernel(self.X[i1], self.X[i1]) * (
-                    alpha1_new - self.alpha[i1]) - self.Y[i2] * self.kernel(
-                self.X[i2],
-                self.X[i1]) * (alpha2_new - self.alpha[i2]) + self.b
-            b2_new = -E2 - self.Y[i1] * self.kernel(self.X[i1], self.X[i2]) * (
-                    alpha1_new - self.alpha[i1]) - self.Y[i2] * self.kernel(
-                self.X[i2],
-                self.X[i2]) * (alpha2_new - self.alpha[i2]) + self.b
-
-            if 0 < alpha1_new < self.C:
-                b_new = b1_new
-            elif 0 < alpha2_new < self.C:
-                b_new = b2_new
-            else:
-                # 选择中点
-                b_new = (b1_new + b2_new) / 2
-
-            # 更新参数
-            self.alpha[i1] = alpha1_new
-            self.alpha[i2] = alpha2_new
-            self.b = b_new
-
-            self.E[i1] = self._E(i1)
-            self.E[i2] = self._E(i2)
-        return 'train done!'
-
-    def predict(self, data):
-        r = self.b
-        for i in range(self.m):
-            r += self.alpha[i] * self.Y[i] * self.kernel(data, self.X[i])
-
-        return 1 if r > 0 else -1
-
-    def score(self, X_test, y_test):
-        right_count = 0
-        for i in range(len(X_test)):
-            result = self.predict(X_test[i])
-            if result == y_test[i]:
-                right_count += 1
-        return right_count / len(X_test)
-
-    def _weight(self):
-        # linear model
-        yx = self.Y.reshape(-1, 1) * self.X
-        self.w = np.dot(yx.T, self.alpha)
-        return self.w
+    dw = dw/len(Y_batch)  # average
+    return dw
 
 
-def normalize(x):
-    return (x - np.min(x)) / (np.max(x) - np.min(x))
+def sgd(features, outputs):
+    max_epochs = 5000
+    weights = np.zeros(features.shape[1])
+    nth = 0
+    prev_cost = float("inf")
+    cost_threshold = 0.01  # in percent
+    # stochastic gradient descent
+    for epoch in range(1, max_epochs):
+        # shuffle to prevent repeating update cycles
+        X, Y = shuffle(features, outputs)
+        for ind, x in enumerate(X):
+            ascent = calculate_cost_gradient(weights, x, Y[ind])
+            weights = weights - (learning_rate * ascent)
+
+        # convergence check on 2^nth epoch
+        if epoch == 2 ** nth or epoch == max_epochs - 1:
+            cost = compute_cost(weights, features, outputs)
+            print("Epoch is: {} and Cost is: {}".format(epoch, cost))
+            # stoppage criterion
+            if abs(prev_cost - cost) < cost_threshold * prev_cost:
+                return weights
+            prev_cost = cost
+            nth += 1
+    return weights
 
 
-def get_datasets():
-    # breast cancer for classification(2 classes)
-    X, y = datasets.load_breast_cancer(return_X_y=True)
-    # 归一化
-    X_norm = normalize(X)
-    X_train = X_norm[:int(len(X_norm) * 0.8)]
-    X_test = X_norm[int(len(X_norm) * 0.8):]
-    y_train = y[:int(len(X_norm) * 0.8)]
-    y_test = y[int(len(X_norm) * 0.8):]
-    return X_train, y_train, X_test, y_test
+########################
 
 
-if __name__ == '__main__':
-    X_train, y_train, X_test, y_test = get_datasets()
-    svm = SVM(max_iter=200)
-    svm.fit(X_train, y_train)
-    print("acccucy:{:.4f}".format(svm.score(X_test, y_test)))
+def init():
+    print("reading dataset...")
+    # read data in pandas (pd) data frame
+    data = pd.read_csv('data.csv')
+
+    # drop last column (extra column added by pd)
+    # and unnecessary first column (id)
+    data.drop(data.columns[[-1, 0]], axis=1, inplace=True)
+
+    print("applying feature engineering...")
+    # convert categorical labels to numbers
+    diag_map = {'M': 1.0, 'B': -1.0}
+    data['diagnosis'] = data['diagnosis'].map(diag_map)
+
+    # put features & outputs in different data frames
+    Y = data.loc[:, 'diagnosis']
+    X = data.iloc[:, 1:]
+
+    # filter features
+    remove_correlated_features(X)
+    remove_less_significant_features(X, Y)
+
+    # normalize data for better convergence and to prevent overflow
+    X_normalized = MinMaxScaler().fit_transform(X.values)
+    X = pd.DataFrame(X_normalized)
+
+    # insert 1 in every row for intercept b
+    X.insert(loc=len(X.columns), column='intercept', value=1)
+
+    # split data into train and test set
+    print("splitting dataset into train and test sets...")
+    X_train, X_test, y_train, y_test = tts(X, Y, test_size=0.2, random_state=42)
+
+    # train the model
+    print("training started...")
+    W = sgd(X_train.to_numpy(), y_train.to_numpy())
+    print("training finished.")
+    print("weights are: {}".format(W))
+
+    # testing the model
+    print("testing the model...")
+    y_train_predicted = np.array([])
+    for i in range(X_train.shape[0]):
+        yp = np.sign(np.dot(X_train.to_numpy()[i], W))
+        y_train_predicted = np.append(y_train_predicted, yp)
+
+    y_test_predicted = np.array([])
+    for i in range(X_test.shape[0]):
+        yp = np.sign(np.dot(X_test.to_numpy()[i], W))
+        y_test_predicted = np.append(y_test_predicted, yp)
+
+    print("accuracy on test dataset: {}".format(accuracy_score(y_test, y_test_predicted)))
+    print("recall on test dataset: {}".format(recall_score(y_test, y_test_predicted)))
+    print("precision on test dataset: {}".format(recall_score(y_test, y_test_predicted)))
+
+
+# set hyper-parameters and call init
+regularization_strength = 10000
+learning_rate = 0.000001
+init()
