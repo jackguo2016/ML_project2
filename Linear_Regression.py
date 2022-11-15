@@ -8,8 +8,34 @@ import csv
 k = random.randint(0, 1) #随机出两个值并附给k和b
 b = random.randint(-1, 1)
 runningtime = 10000
+learning_rate = 0.1
+min_loss = float('inf')  # max the min-loss
+best_k, best_b = None, None
 
-print("__________________________________________________")
+# y_hat的函数
+def y_guess(k, x, b):
+    return k * x + b
+
+def partial_k(price, P_price, space):
+    part1 = np.array(price) - np.array(P_price)
+    part2 = np.mean(part1 * np.array(space))
+    ans = -2 * part2
+    return ans
+
+# 求损失函数
+def loss_function(price, P_price):
+    part1 = np.array(price) - np.array(P_price)
+    part2 = part1 ** 2
+    ans = np.mean(part2)
+    return ans
+
+# 对b求
+def partial_b(price, P_price):
+    part1 = np.array(price) - np.array(P_price)
+    ans = -2 * np.mean(part1)
+    return ans
+
+print("_______________________________________________________________________________")
 with open('kc_house_data.csv', 'r') as f:
     reader = csv.reader(f)
     price = np.array([row[2] for row in reader])
@@ -26,41 +52,7 @@ with open('kc_house_data.csv', 'r') as f:
     print(space)
     print(price)
     #print(type (space))
-print("__________________________________________________")
-
-
-def partial_k(price, P_price, space):
-    part1 = np.array(price) - np.array(P_price)
-    part2 = np.mean(part1 * np.array(space))
-    ans = -2 * part2
-    return ans
-
-# 对b求
-def partial_b(price, P_price):
-    part1 = np.array(price) - np.array(P_price)
-    ans = -2 * np.mean(part1)
-    return ans
-
-
-# 求损失函数
-def loss_function(price, P_price):
-    part1 = np.array(price) - np.array(P_price)
-    part2 = part1 ** 2
-    ans = np.mean(part2)
-    return ans
-
-
-# y_hat的函数
-def y_guess(k, x, b):
-    return k * x + b
-
-
-
-min_loss = float('inf')
-best_k, best_b = None, None
-
-learning_rate = 0.1
-
+print("_______________________________________________________________________________")
 
 min_max_scaler = preprocessing.MinMaxScaler()
 space_train = min_max_scaler.fit_transform(space_train.reshape(-1, 1))
@@ -85,7 +77,7 @@ for i in range(runningtime):
 
     k = k - partial_k(price_train, yhat, space_train) * learning_rate
     b = b - partial_b(price_train, yhat) * learning_rate
-print('L2loss=', min_loss)
+print('loss=', min_loss)
 print('y = {} * x {}'.format(best_k, best_b))
 #hi
 
