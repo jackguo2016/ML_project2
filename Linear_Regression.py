@@ -5,7 +5,9 @@ import random
 import numpy as np
 import csv
 
-
+k = random.randint(0, 1) #随机出两个值并附给k和b
+b = random.randint(-1, 1)
+runningtime = 10000
 
 print("__________________________________________________")
 with open('kc_house_data.csv', 'r') as f:
@@ -27,18 +29,25 @@ with open('kc_house_data.csv', 'r') as f:
 print("__________________________________________________")
 
 
-def partial_k(y_ture, y_guess, x):
-    return -2 * np.mean((np.array(y_ture) - np.array(y_guess)) * np.array(x))
-
+def partial_k(price, P_price, space):
+    part1 = np.array(price) - np.array(P_price)
+    part2 = np.mean(part1 * np.array(space))
+    ans = -2 * part2
+    return ans
 
 # 对b求
-def partial_b(y_ture, y_guess):
-    return -2 * np.mean((np.array(y_ture) - np.array(y_guess)))
+def partial_b(price, P_price):
+    part1 = np.array(price) - np.array(P_price)
+    ans = -2 * np.mean(part1)
+    return ans
 
 
 # 求损失函数
-def l2_loss(y_ture, y_guess):
-    return np.mean((np.array(y_ture) - np.array(y_guess)) ** 2)
+def loss_function(price, P_price):
+    part1 = np.array(price) - np.array(P_price)
+    part2 = part1 ** 2
+    ans = np.mean(part2)
+    return ans
 
 
 # y_hat的函数
@@ -46,12 +55,12 @@ def y_guess(k, x, b):
     return k * x + b
 
 
-trying_time = 10000
+
 min_loss = float('inf')
 best_k, best_b = None, None
+
 learning_rate = 0.1
-k = random.randint(0, 1) #随机出两个值并附给k和b
-b = random.randint(-1, 1)
+
 
 min_max_scaler = preprocessing.MinMaxScaler()
 space_train = min_max_scaler.fit_transform(space_train.reshape(-1, 1))
@@ -66,10 +75,10 @@ plt.show()
 
 # space_train, space_test, price_train, price_test
 
-for i in range(trying_time):
+for i in range(runningtime):
 
     yhat = y_guess(k, space_train, b)
-    L2_loss = l2_loss(price_train, yhat)
+    L2_loss = loss_function(price_train, yhat)
     best_k = k
     best_b = b
     min_loss = L2_loss
