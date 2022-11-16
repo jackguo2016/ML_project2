@@ -13,10 +13,10 @@ min_loss = float('inf')  # max the min-loss
 best_k, best_b = None, None
 
 # y_hat的函数
-def y_guess(k, x, b):
+def straightLineEquation(k, x, b):
     return k * x + b
 
-def partial_k(price, P_price, space):
+def kDerivative(price, P_price, space):
     part1 = np.array(price) - np.array(P_price)
     part2 = np.mean(part1 * np.array(space))
     ans = -2 * part2
@@ -30,7 +30,7 @@ def loss_function(price, P_price):
     return ans
 
 # 对b求
-def partial_b(price, P_price):
+def bDerivative(price, P_price):
     part1 = np.array(price) - np.array(P_price)
     ans = -2 * np.mean(part1)
     return ans
@@ -53,6 +53,9 @@ with open('kc_house_data.csv', 'r') as f:
     print(price)
     #print(type (space))
 print("_______________________________________________________________________________")
+print('-')
+print('-')
+print('-')
 
 min_max_scaler = preprocessing.MinMaxScaler()
 space_train = min_max_scaler.fit_transform(space_train.reshape(-1, 1))
@@ -69,25 +72,27 @@ plt.show()
 
 for i in range(runningtime):
 
-    yhat = y_guess(k, space_train, b)
+    yhat = straightLineEquation(k, space_train, b)
     L2_loss = loss_function(price_train, yhat)
     best_k = k
     best_b = b
     min_loss = L2_loss
 
-    k = k - partial_k(price_train, yhat, space_train) * learning_rate
-    b = b - partial_b(price_train, yhat) * learning_rate
-print('loss=', min_loss)
-print('y = {} * x {}'.format(best_k, best_b))
+    k = k - kDerivative(price_train, yhat, space_train) * learning_rate
+    b = b - bDerivative(price_train, yhat) * learning_rate
+print('|||End!')
+print('|||The final loss=', min_loss)
+print('|||Final equation will be:')
+print('|||y = {} * x {}'.format(best_k, best_b))
 #hi
 
 plt.scatter(space_train, price_train, color='red')
-plt.plot(space_train, y_guess(best_k, space_train, best_b), color='blue')
+plt.plot(space_train, straightLineEquation(best_k, space_train, best_b), color='blue')
 
 plt.show()
 
 plt.scatter(space_test, price_test, color='green')
-plt.plot(space_test, y_guess(best_k, space_test, best_b), color='blue')
+plt.plot(space_test, straightLineEquation(best_k, space_test, best_b), color='blue')
 
 plt.show()
 
