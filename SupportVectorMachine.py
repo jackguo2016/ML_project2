@@ -25,9 +25,8 @@ X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.2, random_
 def svm(features, outputs):
     maxtraintime = 5000
     weights = np.zeros(features.shape[1])
-    nth = 1
+    counter = 1
     prev_cost = float("inf")
-    cost_threshold = 0.01
     for times in range(1, maxtraintime):
         X, Y = shuffle(features, outputs)
         for ind, x in enumerate(X):
@@ -49,7 +48,7 @@ def svm(features, outputs):
             ascent = dw / len(Y_batch)
             weights = weights - (learning_rate * ascent)
 
-        if times == 2 ** nth or times == maxtraintime - 1:
+        if times == 2 * counter or times == maxtraintime - 1:
             N = features.shape[0]
             distances = 1 - outputs * (np.dot(features, weights))
             distances[distances < 0] = 0
@@ -60,26 +59,26 @@ def svm(features, outputs):
             if abs(prev_cost - cost) < 0.000000001:
                 return weights
             prev_cost = cost
-            nth += 1
+            counter += 1
     return weights
 
 
 
 
-W = svm(X_train.to_numpy(), y_train.to_numpy())
+Weights = svm(X_train.to_numpy(), y_train.to_numpy())
 
 print("weights: ")
-print(W)
+print(Weights)
 
 
 y_train_predicted = np.array([])
 for i in range(X_train.shape[0]):
-    yp = np.sign(np.dot(X_train.to_numpy()[i], W))
+    yp = np.sign(np.dot(X_train.to_numpy()[i], Weights))
     y_train_predicted = np.append(y_train_predicted, yp)
 
 y_test_predicted = np.array([])
 for i in range(X_test.shape[0]):
-    yp = np.sign(np.dot(X_test.to_numpy()[i], W))
+    yp = np.sign(np.dot(X_test.to_numpy()[i], Weights))
     y_test_predicted = np.append(y_test_predicted, yp)
 
 print("accuracy on test dataset: {}".format(accuracy_score(y_test, y_test_predicted)))
@@ -87,5 +86,3 @@ print("accuracy on test dataset: {}".format(accuracy_score(y_test, y_test_predic
 print("the final confusion matrix is：")
 mx =confusion_matrix(y_test, y_test_predicted)
 print(mx)
-
-
