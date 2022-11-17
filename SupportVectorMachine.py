@@ -5,7 +5,9 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 from sklearn.utils import shuffle
 from sklearn.metrics import confusion_matrix
+import time
 
+time_start=time.time()
 regularization_strength = 10000
 learning_rate = 0.000001
 
@@ -86,3 +88,5 @@ print("accuracy on test dataset: {}".format(accuracy_score(y_test, y_test_predic
 print("the final confusion matrix is：")
 mx =confusion_matrix(y_test, y_test_predicted)
 print(mx)
+time_end=time.time()
+print('time cost',time_end-time_start,'s')
