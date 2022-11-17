@@ -49,7 +49,7 @@ def svm(features, outputs):
             ascent = dw / len(Y_batch)
             weights = weights - (learning_rate * ascent)
 
-        if times == 2 * nth or times == maxtraintime - 1:
+        if times == 2 ** nth or times == maxtraintime - 1:
             N = features.shape[0]
             distances = 1 - outputs * (np.dot(features, weights))
             distances[distances < 0] = 0
@@ -64,15 +64,14 @@ def svm(features, outputs):
     return weights
 
 
-# train the model
+
 
 W = svm(X_train.to_numpy(), y_train.to_numpy())
 
 print("weights: ")
 print(W)
 
-# testing the model
-print("testing the model...")
+
 y_train_predicted = np.array([])
 for i in range(X_train.shape[0]):
     yp = np.sign(np.dot(X_train.to_numpy()[i], W))
@@ -85,6 +84,7 @@ for i in range(X_test.shape[0]):
 
 print("accuracy on test dataset: {}".format(accuracy_score(y_test, y_test_predicted)))
 
+print("the final confusion matrix is：")
 mx =confusion_matrix(y_test, y_test_predicted)
 print(mx)
 
