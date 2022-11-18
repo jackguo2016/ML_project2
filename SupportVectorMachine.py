@@ -1,17 +1,23 @@
 import numpy as np
 import pandas as pd
+import time
+import matplotlib.pyplot as plt
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 from sklearn.utils import shuffle
 from sklearn.metrics import confusion_matrix
-import time
+
 
 time_start=time.time()
 regularization_strength = 10000
 learning_rate = 0.000001
 
 data = pd.read_csv('data.csv')
+timearrayX = np.array(data['radius_mean'])
+timearrayY = np.array(data['texture_mean'])
+plt.scatter(timearrayX, timearrayY)
+plt.show()
 data.drop(data.columns[[-1, 0]], axis=1, inplace=True)  # remove the id and last null column
 diag_map = {'M': 1.0, 'B': -1.0}  # move the data to number ready to use
 data['diagnosis'] = data['diagnosis'].map(diag_map)  # split the features and final outputs

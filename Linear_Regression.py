@@ -5,14 +5,14 @@ import random
 import numpy as np
 import csv
 
-k = random.randint(0, 1) #随机出两个值并附给k和b
+k = random.randint(0, 1)
 b = random.randint(-1, 1)
 runningtime = 10000
 learning_rate = 0.1
 min_loss = float('inf')  # max the min-loss
 best_k, best_b = None, None
 
-# y_hat的函数
+
 def straightLineEquation(k, x, b):
     return k * x + b
 
@@ -22,14 +22,14 @@ def kDerivative(price, P_price, space):
     ans = -2 * part2
     return ans
 
-# 求损失函数
+
 def loss_function(price, P_price):
     part1 = np.array(price) - np.array(P_price)
     part2 = part1 ** 2
     ans = np.mean(part2)
     return ans
 
-# 对b求
+
 def bDerivative(price, P_price):
     part1 = np.array(price) - np.array(P_price)
     ans = -2 * np.mean(part1)
