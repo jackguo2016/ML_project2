@@ -14,7 +14,7 @@
    - 应用：基于居住面积预测房屋价格
 
 2. **感知机**
-   - 文件：`python_HW2_Perceptron.ipynb`
+   - 文件：`python_HW2_Perceptron .ipynb`
    - 特点：包含权重更新、训练和分类函数
    - 功能：提供交互式界面，可视化决策边界
 
@@ -27,18 +27,21 @@
 
 1. 克隆仓库：
    ```
-   git clone https://github.com/ziyan-guo/ml-algorithms-implementation.git
+   git clone https://github.com/jackguo2016/ML_project2.git
+   cd ML_project2
    ```
 
 2. 安装依赖：
    ```
-   pip install -r requirements.txt
+   python -m pip install numpy pandas matplotlib scikit-learn scipy notebook
    ```
 
 3. 运行各算法：
    - 线性回归：`python Linear_Regression.py`
-   - 感知机：在Jupyter Notebook中运行`python_HW2_Perceptron.ipynb`
+   - 感知机：在Jupyter Notebook中运行`python_HW2_Perceptron .ipynb`
    - SVM：`python SupportVectorMachine.py`
+
+线性回归当前对训练集和测试集分别拟合归一化，SVM 在划分训练集和测试集前归一化全量数据。解读课程实验结果时需考虑这两点。
 
 ## 数据集
 
@@ -51,14 +54,15 @@
 - Pandas
 - Matplotlib
 - Scikit-learn
+- SciPy / Jupyter Notebook
 
 ## 贡献
 
-欢迎提出问题和改进建议。如有兴趣贡献代码，请查看[issues页面](https://github.com/ziyan-guo/ml-algorithms-implementation/issues)。
+欢迎提出问题和改进建议。如有兴趣贡献代码，请查看[issues页面](https://github.com/jackguo2016/ML_project2/issues)。
 
 ## 许可证
 
-本项目采用MIT许可证 - 详见 [LICENSE.md](LICENSE.md) 文件。
+原 README 提及 MIT 许可证，当前仓库未附对应文件。
 
 
 # Machine Learning Algorithms Implementation
@@ -86,7 +90,7 @@ This project showcases the implementation and application of three basic machine
 - Applied to predict house prices based on living area
 
 ### 2. Perceptron
-- Implemented in `python_HW2_Perceptron.ipynb`
+- Implemented in `python_HW2_Perceptron .ipynb`
 - Includes functions for weight updating, training, and classification
 - Features an interactive interface for visualizing decision boundaries
 
@@ -100,9 +104,9 @@ This project showcases the implementation and application of three basic machine
 To run this project, clone the repository and install the required dependencies:
 
 ```bash
-git clone https://github.com/ziyan-guo/ml-algorithms-implementation.git
-cd ml-algorithms-implementation
-pip install -r requirements.txt
+git clone https://github.com/jackguo2016/ML_project2.git
+cd ML_project2
+python -m pip install numpy pandas matplotlib scikit-learn scipy notebook
 ```
 
 ## Usage
@@ -115,7 +119,7 @@ Each algorithm can be run separately:
    ```
 
 2. Perceptron:
-   Open and run `python_HW2_Perceptron.ipynb` in Jupyter Notebook
+   Open and run `python_HW2_Perceptron .ipynb` in Jupyter Notebook
 
 3. SVM:
    ```
@@ -125,7 +129,7 @@ Each algorithm can be run separately:
 ## File Structure
 
 - `Linear_Regression.py`: Linear regression implementation
-- `python_HW2_Perceptron.ipynb`: Perceptron implementation
+- `python_HW2_Perceptron .ipynb`: Perceptron implementation
 - `SupportVectorMachine.py`: SVM implementation
 - `helperfunctions.py`: Utility functions for data loading and visualization
 - `kc_house_data.csv`: Dataset for house price prediction
@@ -137,6 +141,9 @@ Each algorithm can be run separately:
 - Pandas
 - Matplotlib
 - Scikit-learn
+- SciPy / Jupyter Notebook
+
+Linear regression currently fits normalization separately to training and test data, and the SVM fits it on all data before splitting. These choices limit how the coursework results can be interpreted.
 
 ## Dataset
 
@@ -145,8 +152,8 @@ Each algorithm can be run separately:
 
 ## Contributing
 
-Contributions, issues, and feature requests are welcome. Feel free to check [issues page](https://github.com/ziyan-guo/ml-algorithms-implementation/issues) if you want to contribute.
+Contributions, issues, and feature requests are welcome. Feel free to check [issues page](https://github.com/jackguo2016/ML_project2/issues) if you want to contribute.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
+The original README referenced an MIT license file. The current repository does not include that file.
