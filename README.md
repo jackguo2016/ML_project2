@@ -27,8 +27,8 @@
 
 1. 克隆仓库：
    ```
-   git clone https://github.com/jackguo2016/ML_project2.git
-   cd ML_project2
+   git clone https://github.com/jackguo2016/ml-regression-and-classification.git
+   cd ml-regression-and-classification
    ```
 
 2. 安装依赖：
@@ -58,7 +58,7 @@
 
 ## 贡献
 
-欢迎提出问题和改进建议。如有兴趣贡献代码，请查看[issues页面](https://github.com/jackguo2016/ML_project2/issues)。
+欢迎提出问题和改进建议。如有兴趣贡献代码，请查看[issues页面](https://github.com/jackguo2016/ml-regression-and-classification/issues)。
 
 ## 许可证
 
@@ -104,8 +104,8 @@ This project showcases the implementation and application of three basic machine
 To run this project, clone the repository and install the required dependencies:
 
 ```bash
-git clone https://github.com/jackguo2016/ML_project2.git
-cd ML_project2
+git clone https://github.com/jackguo2016/ml-regression-and-classification.git
+cd ml-regression-and-classification
 python -m pip install numpy pandas matplotlib scikit-learn scipy notebook
 ```
 
@@ -152,8 +152,12 @@ Linear regression currently fits normalization separately to training and test d
 
 ## Contributing
 
-Contributions, issues, and feature requests are welcome. Feel free to check [issues page](https://github.com/jackguo2016/ML_project2/issues) if you want to contribute.
+Contributions, issues, and feature requests are welcome. Feel free to check [issues page](https://github.com/jackguo2016/ml-regression-and-classification/issues) if you want to contribute.
 
 ## License
 
 The original README referenced an MIT license file. The current repository does not include that file.
+
+## Project history
+
+Former repository name: `ML_project2`. This repository preserves the original coursework and its development history.
